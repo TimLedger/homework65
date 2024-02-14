@@ -1,0 +1,26 @@
+.header {
+    padding: 20px 0;
+    background: #fff;
+    border-bottom: 1px solid black;
+    border-radius: 0 0 30px 30px;
+}
+
+.header-inner{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    display: flex;
+    color: #333;
+    font-size: 40px;
+}
+
+.logo:hover {
+    color: #333;
+}
+
+.logo h3{
+    margin: 0;
+}

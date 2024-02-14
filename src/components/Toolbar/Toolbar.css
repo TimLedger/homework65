@@ -1,0 +1,47 @@
+.main-nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+}
+
+.main-nav li {
+    margin-left: 20px; 
+}
+
+.link {
+    text-transform: uppercase;
+    text-decoration: none;
+    color: black;
+    padding-bottom: 5px;
+    background-image: linear-gradient(to bottom, transparent 0%, transparent 90%, black 90%, black 100%);
+    background-repeat: no-repeat;
+    background-size: 0% 100%;
+    background-position-x: left;
+    transition: 0.3s ease;
+}
+
+.link:hover {
+    color: black; 
+    background-size: 100% 100%;
+    background-position-x: right; 
+    color: grey; 
+}
+
+.active-link {
+    text-transform: uppercase;
+    color: blueviolet; 
+    padding-bottom: 5px;
+    background-image: linear-gradient(to bottom, transparent 0%, transparent 90%, blueviolet 90%, blueviolet 100%);
+    background-repeat: no-repeat;
+    background-size: 0% 100%;
+    background-position-x: left;
+    transition: 0.3s ease;
+}
+
+.active-link:hover {
+    color: black; 
+    background-size: 100% 100%;
+    background-position-x: right; 
+    color: grey; 
+}
