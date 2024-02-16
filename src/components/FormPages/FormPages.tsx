@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Preloader from '../Preloader/Preloader';
+// import { Page, PageApi } from '../../types';
 import axiosApi from '../../axiosApi'; 
 import './FormPages.css';
 
@@ -9,12 +12,23 @@ interface Page {
   content: string; 
 }
 
+interface PageApi {
+  selectedPageId: string, 
+  newPageName: string, 
+  title: string, 
+  content: string 
+  pageName: string;
+}
+
 const FormPages: React.FC = () => {
-  const [formData, setFormData] = useState<{ selectedPageId: string, newPageName: string, title: string, content: string }>({
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState<PageApi>({
     selectedPageId: '', 
     newPageName: '', 
     title: '', 
-    content: '' 
+    content: '', 
+    pageName: ''
   });
   const [pages, setPages] = useState<Page[]>([]); 
 
@@ -25,7 +39,7 @@ const FormPages: React.FC = () => {
       'у': 'u', 'ф': 'f', 'х': 'h', 'ц': 'c', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '', 'ы': 'y', 'ь': '',
       'э': 'e', 'ю': 'yu', 'я': 'ya'
     };
-  
+
     return text.split('').map(char => rusToEngMap[char] || char).join('');
   };
 
@@ -34,10 +48,8 @@ const FormPages: React.FC = () => {
       try {
         const response = await axiosApi.get('/pages.json');
         const pagesData: { [key: string]: Page } = response.data;
-        if (pagesData) {
-          const pagesList = Object.values(pagesData);
-          setPages(pagesList);
-        }
+        const pagesList = Object.values(pagesData);
+        setPages(pagesList);
       } catch (error) {
         console.error('Error fetching pages:', error);
       }
@@ -48,9 +60,13 @@ const FormPages: React.FC = () => {
   useEffect(() => {
     const fetchContent = async () => {
       try {
-        const response = await axiosApi.get(`/pages/${formData.selectedPageId}.json`);
+        const response = await axiosApi.get('/pages/' + formData.selectedPageId + '.json');
         const { title, content } = response.data || {}; 
-        setFormData(prevState => ({ ...prevState, title: title || '', content: content || '' }));
+        setFormData(prevState => ({ 
+          ...prevState, 
+          title: title || '', 
+          content: content || '' 
+        }));
       } catch (error) {
         console.error('Error fetching content:', error);
       }
@@ -59,37 +75,61 @@ const FormPages: React.FC = () => {
       fetchContent(); 
     }
   }, [formData.selectedPageId]); 
-
+  
   const handleSave = async () => {
     try {
-      const newContent = { title: formData.title, content: formData.content, pageName: formData.selectedPageId };
-      await axiosApi.put(`/pages/${formData.selectedPageId}.json`, newContent);
-      window.location.href = `/pages/${formData.selectedPageId}`;
-    } catch (error) {
-      console.error('Error saving content:', error);
+      setLoading(true);
+      const newContent = { 
+        id: formData.selectedPageId, 
+        title: formData.title, 
+        content: formData.content, 
+        pageName: formData.pageName
+      };
+      await axiosApi.put('/pages/' + formData.selectedPageId + '.json', newContent);
+      navigate('/pages/' + formData.selectedPageId);
+    } finally {
+      setLoading(false);
     }
   };
-
+  
   const handleNewPage = async () => {
     try {
+      setLoading(true);
       const newPageId = russianToTranslit(formData.newPageName).toLowerCase().replace(/\s+/g, '-');
-      const newContent = { title: formData.title, content: formData.content, pageName: newPageId};
-      await axiosApi.put(`/pages/${newPageId}.json`, newContent);
-      window.location.href = `/pages/${newPageId}`;
-    } catch (error) {
-      console.error('Error creating new page:', error);
+      const newContent = { 
+        id: newPageId, 
+        title: formData.title, 
+        content: formData.content, 
+        pageName: formData.newPageName
+      };
+      await axiosApi.put('/pages/' + newPageId + '.json', newContent);
+      navigate('/pages/' + newPageId);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handlePageSelect = (selectedId: string) => {
-    setFormData(prevState => ({ ...prevState, selectedPageId: selectedId }));
     const selectedPage = pages.find(page => page.id === selectedId);
     if (selectedPage) {
-      setFormData(prevState => ({ ...prevState, title: selectedPage.title, content: selectedPage.content }));
+      setFormData(prevState => ({ 
+        ...prevState, 
+        selectedPageId: selectedId, 
+        title: selectedPage.title, 
+        content: selectedPage.content,
+        pageName: selectedPage.pageName 
+      }));
     } else {
-      setFormData(prevState => ({ ...prevState, title: '', content: '' }));
+      setFormData(prevState => ({ 
+        ...prevState, 
+        selectedPageId: selectedId, 
+        title: '', 
+        content: '',
+        pageName: '' 
+      }));
     }
   };
+  
 
   return (
     <div>
@@ -98,16 +138,17 @@ const FormPages: React.FC = () => {
         {pages.map((page) => (
           <option key={page.id} value={page.id}>{page.pageName}</option>
         ))}
-        <option value="">Add new page</option>
+        <option value="">Добавить новую страницу</option>
       </select>
       {formData.selectedPageId === '' && (
-        <input type="text" placeholder="New Page Name" value={formData.newPageName} onChange={(e) => setFormData(prevState => ({ ...prevState, newPageName: e.target.value }))} />
+        <input type="text" placeholder="Имя новой страницы" value={formData.newPageName} onChange={(e) => setFormData(prevState => ({ ...prevState, newPageName: e.target.value }))} />
       )}
-      <input type="text" placeholder="Title" value={formData.title} onChange={(e) => setFormData(prevState => ({ ...prevState, title: e.target.value }))} /> 
-      <textarea value={formData.content} onChange={(e) => setFormData(prevState => ({ ...prevState, content: e.target.value }))} />
+      <input type="text" placeholder="Заголовок" value={formData.title} onChange={(e) => setFormData(prevState => ({ ...prevState, title: e.target.value }))} /> 
+      <textarea value={formData.content} placeholder="Описание" onChange={(e) => setFormData(prevState => ({ ...prevState, content: e.target.value }))} />
       <button onClick={formData.selectedPageId === '' ? handleNewPage : handleSave}>
-        {formData.selectedPageId === '' ? 'Create Page' : 'Save'}
+        {formData.selectedPageId === '' ? 'Создать страницу' : 'Сохранить'}
       </button>
+      {loading && <Preloader />}
     </div>
   );
 };
