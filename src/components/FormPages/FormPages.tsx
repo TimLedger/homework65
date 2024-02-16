@@ -126,7 +126,7 @@ const FormPages: React.FC = () => {
 
   return (
     <div className='form-frame'>
-      <h1>Admin Page</h1>
+      <h1>Admin</h1>
       <div className='form'>
         <select 
           className="form-select"
