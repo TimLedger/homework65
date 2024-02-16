@@ -18,7 +18,6 @@ const FormPages: React.FC = () => {
     pageName: ''
   });
   const [pages, setPages] = useState<Page[]>([]); 
-
   const russianToTranslit = (text: string) => {
     const rusToEngMap: {[key: string]: string} = { 
       'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i',
@@ -29,6 +28,7 @@ const FormPages: React.FC = () => {
 
     return text.split('').map(char => rusToEngMap[char] || char).join('');
   };
+  const [contentChanged, setContentChanged] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchPages = async () => {
@@ -63,7 +63,7 @@ const FormPages: React.FC = () => {
     }
   }, [formData.selectedPageId]); 
   
-  const handleSave = async () => {
+  const savePage = async () => {
     try {
       setLoading(true);
       const newContent = { 
@@ -79,7 +79,7 @@ const FormPages: React.FC = () => {
     }
   };
   
-  const handleNewPage = async () => {
+  const newPage = async () => {
     try {
       setLoading(true);
       const newPageId = russianToTranslit(formData.newPageName).toLowerCase().replace(/\s+/g, '-');
@@ -96,7 +96,7 @@ const FormPages: React.FC = () => {
     }
   };
 
-  const handlePageSelect = (selectedId: string) => {
+  const pageSelect = (selectedId: string) => {
     const selectedPage = pages.find(page => page.id === selectedId);
     if (selectedPage) {
       setFormData(prevState => ({ 
@@ -117,6 +117,15 @@ const FormPages: React.FC = () => {
     }
   };
 
+  const contentChange = (value: string) => {
+    if (value !== formData.content) { 
+      setFormData(prevState => ({ ...prevState, content: value }));
+      setContentChanged(true); 
+    } else {
+      setContentChanged(false); 
+    }
+  };
+  
   const isFormValid = () => {
     if (formData.selectedPageId === '') {
       return formData.newPageName.trim() !== '' && formData.title.trim() !== '' && formData.content.trim() !== '';
@@ -125,7 +134,6 @@ const FormPages: React.FC = () => {
     }
   };
   
-
   return (
     <div className='form-frame'>
       <h1>Admin</h1>
@@ -133,14 +141,14 @@ const FormPages: React.FC = () => {
         <select 
           className="form-select"
           value={formData.selectedPageId} 
-          onChange={(e) => handlePageSelect(e.target.value)}
+          onChange={(e) => pageSelect(e.target.value)}
         >
           {pages.map((page) => (
             <option key={page.id} value={page.id} className='form-option'>
               {page.pageName}
             </option>
           ))}
-          <option value="">Добавить новую страницу</option>
+          <option value="" className='form-option'>Добавить новую страницу</option>
         </select>
         {formData.selectedPageId === '' && (
           <input 
@@ -164,26 +172,9 @@ const FormPages: React.FC = () => {
           className="form-textarea"
           placeholder="Описание" 
           value={formData.content} 
-          onChange={(value) => setFormData(prevState => ({ ...prevState, content: value }))} 
-          // modules={{
-          //   toolbar: [
-          //     [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
-          //     [{size: []}],
-          //     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
-          //     [{'list': 'ordered'}, {'list': 'bullet'}, 
-          //      {'indent': '-1'}, {'indent': '+1'}],
-          //     ['link', 'image', 'video'],
-          //     ['clean']
-          //   ],
-          // }}
-          // formats={[
-          //   'header', 'font', 'size',
-          //   'bold', 'italic', 'underline', 'strike', 'blockquote',
-          //   'list', 'bullet', 'indent',
-          //   'link', 'image', 'video'
-          // ]}
+          onChange={contentChange}
         />
-        <button onClick={formData.selectedPageId === '' ? handleNewPage : handleSave} disabled={!isFormValid()}>
+        <button onClick={formData.selectedPageId === '' ? newPage : savePage} disabled={!isFormValid() || !contentChanged} >
         {formData.selectedPageId === '' ? 'Создать страницу' : 'Сохранить'}
         </button>
       </div>
