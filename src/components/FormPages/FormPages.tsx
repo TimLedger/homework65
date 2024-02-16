@@ -4,6 +4,8 @@ import Preloader from '../Preloader/Preloader';
 import { Page, PageApi } from '../../types';
 import axiosApi from '../../axiosApi'; 
 import './FormPages.css';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css'; 
 
 const FormPages: React.FC = () => {
   const navigate = useNavigate();
@@ -158,13 +160,28 @@ const FormPages: React.FC = () => {
           value={formData.title} 
           onChange={(e) => setFormData(prevState => ({ ...prevState, title: e.target.value }))} 
         /> 
-        <textarea 
-          rows={10}
-          className="form-input"
+        <ReactQuill
+          className="form-textarea"
           placeholder="Описание" 
-          required
           value={formData.content} 
-          onChange={(e) => setFormData(prevState => ({ ...prevState, content: e.target.value }))} 
+          onChange={(value) => setFormData(prevState => ({ ...prevState, content: value }))} 
+          // modules={{
+          //   toolbar: [
+          //     [{ 'header': '1'}, {'header': '2'}, { 'font': [] }],
+          //     [{size: []}],
+          //     ['bold', 'italic', 'underline', 'strike', 'blockquote'],
+          //     [{'list': 'ordered'}, {'list': 'bullet'}, 
+          //      {'indent': '-1'}, {'indent': '+1'}],
+          //     ['link', 'image', 'video'],
+          //     ['clean']
+          //   ],
+          // }}
+          // formats={[
+          //   'header', 'font', 'size',
+          //   'bold', 'italic', 'underline', 'strike', 'blockquote',
+          //   'list', 'bullet', 'indent',
+          //   'link', 'image', 'video'
+          // ]}
         />
         <button onClick={formData.selectedPageId === '' ? handleNewPage : handleSave} disabled={!isFormValid()}>
         {formData.selectedPageId === '' ? 'Создать страницу' : 'Сохранить'}

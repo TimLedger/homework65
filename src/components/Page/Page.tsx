@@ -37,7 +37,7 @@ const Page = () => {
       <div>
         <div className="page"> 
             <h2 className='page-title'>{page.title}</h2>
-            <p className="page-text">{page.content}</p>
+            <div dangerouslySetInnerHTML={{ __html: page.content }} />
             <button className='delete-btn' onClick={deletePage}>Удалить</button>
         </div>
       </div>
