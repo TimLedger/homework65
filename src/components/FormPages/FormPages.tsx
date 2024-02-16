@@ -1,24 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Preloader from '../Preloader/Preloader';
-// import { Page, PageApi } from '../../types';
+import { Page, PageApi } from '../../types';
 import axiosApi from '../../axiosApi'; 
 import './FormPages.css';
-
-interface Page {
-  id: string; 
-  pageName: string; 
-  title: string; 
-  content: string; 
-}
-
-interface PageApi {
-  selectedPageId: string, 
-  newPageName: string, 
-  title: string, 
-  content: string 
-  pageName: string;
-}
 
 const FormPages: React.FC = () => {
   const navigate = useNavigate();
@@ -129,25 +114,62 @@ const FormPages: React.FC = () => {
       }));
     }
   };
+
+  const isFormValid = () => {
+    if (formData.selectedPageId === '') {
+      return formData.newPageName.trim() !== '' && formData.title.trim() !== '' && formData.content.trim() !== '';
+    } else {
+      return formData.title.trim() !== '' && formData.content.trim() !== '';
+    }
+  };
   
 
   return (
-    <div>
+    <div className='form-frame'>
       <h1>Admin Page</h1>
-      <select value={formData.selectedPageId} onChange={(e) => handlePageSelect(e.target.value)}>
-        {pages.map((page) => (
-          <option key={page.id} value={page.id}>{page.pageName}</option>
-        ))}
-        <option value="">Добавить новую страницу</option>
-      </select>
-      {formData.selectedPageId === '' && (
-        <input type="text" placeholder="Имя новой страницы" value={formData.newPageName} onChange={(e) => setFormData(prevState => ({ ...prevState, newPageName: e.target.value }))} />
-      )}
-      <input type="text" placeholder="Заголовок" value={formData.title} onChange={(e) => setFormData(prevState => ({ ...prevState, title: e.target.value }))} /> 
-      <textarea value={formData.content} placeholder="Описание" onChange={(e) => setFormData(prevState => ({ ...prevState, content: e.target.value }))} />
-      <button onClick={formData.selectedPageId === '' ? handleNewPage : handleSave}>
+      <div className='form'>
+        <select 
+          className="form-select"
+          value={formData.selectedPageId} 
+          onChange={(e) => handlePageSelect(e.target.value)}
+        >
+          {pages.map((page) => (
+            <option key={page.id} value={page.id} className='form-option'>
+              {page.pageName}
+            </option>
+          ))}
+          <option value="">Добавить новую страницу</option>
+        </select>
+        {formData.selectedPageId === '' && (
+          <input 
+            type="text" 
+            className="form-input-name"
+            required
+            placeholder="Имя новой страницы" 
+            value={formData.newPageName} 
+            onChange={(e) => setFormData(prevState => ({ ...prevState, newPageName: e.target.value }))} 
+          />
+        )}
+        <input 
+          type="text" 
+          className="form-input"
+          placeholder="Заголовок" 
+          required
+          value={formData.title} 
+          onChange={(e) => setFormData(prevState => ({ ...prevState, title: e.target.value }))} 
+        /> 
+        <textarea 
+          rows={10}
+          className="form-input"
+          placeholder="Описание" 
+          required
+          value={formData.content} 
+          onChange={(e) => setFormData(prevState => ({ ...prevState, content: e.target.value }))} 
+        />
+        <button onClick={formData.selectedPageId === '' ? handleNewPage : handleSave} disabled={!isFormValid()}>
         {formData.selectedPageId === '' ? 'Создать страницу' : 'Сохранить'}
-      </button>
+        </button>
+      </div>
       {loading && <Preloader />}
     </div>
   );
